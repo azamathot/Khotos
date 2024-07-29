@@ -1,0 +1,92 @@
+﻿@page "/product/{id}/{name}"
+
+@* @rendermode InteractiveServerRenderMode *@
+
+@inject IHttpClientFactory Factory
+@inject UserService UserService
+@inject OrderService OrderService
+@inject IJSRuntime JSRuntime;
+@inject TimeZoneService TimeZoneService
+
+@attribute [Authorize]
+
+<h3>@Name</h3>
+<EditForm Model="@order" FormName="order" OnValidSubmit ="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <p>
+        Тема:<br/>
+        <InputText id="subject" @bind-Value="@order.Subject" @onkeypress="() => message = null" />
+    </p>
+    <p>
+        Описание:<br/>
+        <InputTextArea id="description" @bind-Value="@order.Description" @onkeypress="() => message = null"></InputTextArea>
+    </p>
+    <button type="submit">Сделать заказ</button>
+</EditForm>
+
+<div class="my-3 alert alert-@alertType @(string.IsNullOrWhiteSpace(message) ? "d-none" : "")" role="alert">@message</div>
+
+<Preload LoadingText="Отправка на сервер..." />
+
+@code {
+    [Inject] protected PreloadService PreloadService { get; set; }
+
+    [SupplyParameterFromForm]
+    public Order order { get; set; } = new(); 
+
+    string alertType, message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Name = (WebUtility.UrlDecode(Name));
+    }
+
+    [Parameter]
+    [EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+
+    private async Task Submit()
+    {
+        try
+        {
+            PreloadService.Show(SpinnerColor.Light);
+
+            order.UserId = UserService.UserId!;
+            order.Username = UserService.UserName;
+            order.ProductId = int.Parse(Id);
+            order.ProductName = Name;
+            order.StatusOrder = OrderStatus.Created.StatusId;
+            order.StatusPayment = PaymentStatus.NotAssigned.StatusId;
+            
+            order.Created = await TimeZoneService.GetLocalDateTime(DateTimeOffset.UtcNow);
+
+            var resp = await OrderService.AddNewOrderAsync(order);
+            if (resp == HttpStatusCode.Created)
+            {
+                alertType = "success";
+                message = "Заказ успешно подан";
+                order.Subject = order.Description = "";
+
+            }
+            else
+            {
+                alertType = "danger";
+                message = $"{resp.ToString()}";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Logger.LogInformation(ex.Message);
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            PreloadService.Hide();
+        }
+    }
+}

@@ -1,0 +1,55 @@
+﻿@* @rendermode InteractiveServerRenderMode *@
+
+@using Microsoft.AspNetCore.Components.Web
+@using SharedModels.Products
+@using KhotosUI.Services
+
+@inject NavigationManager nav
+@inject IHttpClientFactory ClientFactory
+
+<h3>ProductView</h3>
+
+@if (categories == null)
+{
+    <p><em>Loading...</em></p>
+    <button @onclick="GetData">get categories</button>
+}
+else
+{
+    foreach (var item in categories)
+    {
+        <h4>@item.Name:</h4>
+        <ul>
+            @foreach (var product in item.Products)
+            {
+                var link = $"/Product/{product.Id}/{product.Name}";
+                <li><NavLink href="@link">@product.Name</NavLink></li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    private HttpClient httpClient;
+
+    IList<Category> categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = ClientFactory.CreateClient("API");
+        await GetData();
+    }
+    private async Task GetData()
+    {
+        try
+        {
+            var response = await httpClient.GetAsync("/products/Categories/getcategorieslink", System.Threading.CancellationToken.None);
+            if (response != null && response.IsSuccessStatusCode == true)
+                categories = await response.Content.ReadFromJsonAsync<IList<Category>>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

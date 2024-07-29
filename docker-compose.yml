@@ -1,0 +1,68 @@
+version: '3.4'
+
+services:
+  # proxy:
+  #   image:  nginx:latest
+  #   container_name: proxy
+
+  sql:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: sql_server2022
+    hostname: sql_server2022
+
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      [
+        'start-dev'
+      ]
+    ports:
+      - 8080:8080
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # Порт для AMQP
+      - "15672:15672" # Порт для веб-консоли управления
+
+
+  webgateway:
+    image: ${DOCKER_REGISTRY-}webgateway
+    container_name: WebGateway
+    build:
+      context: .
+      dockerfile: Gateways/WebGateway/Dockerfile
+
+
+  orderingapi:
+    image: ${DOCKER_REGISTRY-}orderingapi
+    build:
+      context: .
+      dockerfile: Services/Ordering/Dockerfile
+
+
+  paymentapi:
+    image: ${DOCKER_REGISTRY-}paymentapi
+    container_name: PaymentAPI
+    build:
+      context: .
+      dockerfile: Services/Payment/Dockerfile
+
+
+  portfolioapi:
+    image: ${DOCKER_REGISTRY-}portfolioapi
+    build:
+      context: .
+      dockerfile: Services/Portfolio/Dockerfile
+
+
+  productsapi:
+    image: ${DOCKER_REGISTRY-}productsapi
+    build:
+      context: .
+      dockerfile: Services/Products/Dockerfile

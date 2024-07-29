@@ -1,0 +1,39 @@
+﻿@page "/"
+@inject IHttpClientFactory Factory
+
+<ProductsView />
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<div class="alert alert-warning" role="alert">
+    Before authentication will function correctly, you must configure your provider details in <code>Program.cs</code>
+</div>
+
+Welcome to your new app.
+
+@if (myDataList == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+    <p>myDataList: @myDataList</p>
+}
+
+@code {
+    private string myDataList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = Factory.CreateClient("API");
+            myDataList = await client.GetStringAsync("/products/Categories/getcategorieslink");
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+}

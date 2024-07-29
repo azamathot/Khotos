@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        //"proxy": "StartWithoutDebugging",
+        //"redis": "StartWithoutDebugging",
+        "sql": "StartWithoutDebugging",
+        "webgateway": "StartDebugging",
+        "orderingapi": "StartDebugging",
+        "paymentapi": "StartDebugging",
+        "portfolioapi": "StartDebugging",
+        "productsapi": "StartDebugging",
+      }
+    }
+  }
+}

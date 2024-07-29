@@ -1,0 +1,98 @@
+﻿@page "/adminorders"
+@rendermode InteractiveServer
+
+@inject OrderService OrderService
+@inject NavigationManager Navigation
+
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+@attribute [Authorize(Roles = RoleConsts.Admin)]
+<Grid TItem="OrderView"
+      AllowSorting="true"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="OrdersViewDataProvider"
+      ItemsPerPageText=""
+      PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+      PaginationItemsTextFormat=""
+      Responsive="true"
+      AllowRowClick="true"
+      OnRowClick="OnRowClick"
+      Height="500"
+    >
+
+    <GridColumn TItem="OrderView" HeaderText="Заказы">
+        <Tooltip Title="@context.Order.Description" Color="TooltipColor.Light">
+            <div class="order-row">
+                <i class="text-muted font-small-08">
+                    <a href="#">@context.Order.Username</a>
+                    [@context.Order.ProductName]
+                    <span class="rounded-pill status-black bg-color-@OrderStatus.FromId(context.Order.StatusOrder).Color.ToKnownColor().ToString().ToLower()">@OrderStatus.FromId(context.Order.StatusOrder).Value</span>
+                    [@context.Order.Created.ToString("d")]
+                </i><br />
+                @context.Order.Subject<br />
+
+                @if (@context.CountNewMessage > 0 || context.Order.StatusOrder == (int)KnownOrderStatus.Created)
+                {
+                    <span class="small">
+                        <Badge Color="BadgeColor.Danger"
+                               Position="Position.Absolute"
+                               Placement="BadgePlacement.MiddleLeft"
+                               IndicatorType="BadgeIndicatorType.RoundedPill"
+                               VisuallyHiddenText="unread messages">
+                            @(context.Order.StatusOrder == (int)KnownOrderStatus.Created ? "new" : @context.CountNewMessage)
+                        </Badge>
+                    </span>
+                }
+            </div>
+        </Tooltip>
+    </GridColumn>
+    <GridColumn TItem="OrderView" HeaderText="Цена (руб.)" SortKeySelector="item => item.Order.Price">
+        @context.Order.Price<br/>
+        <span class="text-nowrap rounded-pill font-small-08 status-white bg-color-@PaymentStatus.FromId(context.Order.StatusPayment).Color.ToKnownColor().ToString().ToLower()">@PaymentStatus.FromId(context.Order.StatusPayment).Value</span>
+    </GridColumn>
+    <GridColumn TItem="OrderView" HeaderText="Готовность в %" SortKeySelector="item => item.Order.ProgressPercent">
+        <Progress>
+            <ProgressBar Width="@context.Order.ProgressPercent" Label="@context.Order.ProgressPercent.ToString("0'%")" Color="@BarProgress.GetProgressColor(context.Order.ProgressPercent)" Type="@BarProgress.GetProgressType(context.Order.ProgressPercent)" />
+        </Progress>
+        <span class="text-muted font-small-08">
+            - сроки: @context.Order.BeginTime?.ToString("dd.MM.yyyyy") - @context.Order.EndTime?.ToString("dd.MM.yyyyy")
+        </span>
+    </GridColumn>
+</Grid>
+
+<Preload LoadingText="Загрузка данных..." />
+@* <Modal IsServiceModal="true" /> *@
+
+@code {
+    [Inject] protected PreloadService PreloadService { get; set; }
+    // [Inject] ModalService ModalService { get; set; } = default!;
+
+    private IEnumerable<OrderView>? orderList;
+
+    private async Task<GridDataProviderResult<OrderView>> OrdersViewDataProvider(GridDataProviderRequest<OrderView> request)
+    {
+        try
+        {
+            PreloadService.Show();
+            if (orderList is null)
+                orderList = await OrderService.GetAllOrdersAsync();
+        }
+        catch
+        {
+        }
+        finally
+        {
+            PreloadService.Hide();
+        }
+        return await Task.FromResult(request.ApplyTo(orderList!));
+    }
+
+
+    private async Task OnRowClick(GridRowEventArgs<OrderView> args)
+    {
+        await ProtectedSessionStore.SetAsync("SelectedItem", args.Item);
+        // await ModalService.ShowAsync(new ModalOption { Type = ModalType.Primary, Title = "Event: Row Click", Message = $"Id: {args.Item.Order.Subject}, Name: {args.Item.Username}" });
+        Navigation.NavigateTo($"/adminorderdetail");
+    }
+
+} 

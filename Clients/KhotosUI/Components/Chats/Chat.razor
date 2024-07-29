@@ -1,0 +1,176 @@
+﻿@* @page "/chatroom" *@
+
+@inject ChatClient ChatClient
+@inject UserService UserService
+@inject IJSRuntime JSRuntime
+@inject PreloadService PreloadService
+
+@attribute [Authorize]
+<Preload LoadingText="Загрузка данных..." />
+<hr />
+@if (!_isChatting)
+{
+    <Button Color="ButtonColor.Primary" Loading="true" LoadingText="Открыть чат......" @onclick="StartChatAsync"/>
+}
+else
+{
+    <div class="my-2 rounded-1 alert-success @(OrderItem == null ? "d-none" : "")">
+        <span>@ChatClient.Companion</span>
+        <span class="text-@(ChatClient.IsCompanionOnline ? "lime" : "gray")"> ⬤ </span>
+    </div>
+    // display messages
+    <div class="message-block">
+        <div class="message-block-inner">
+            @foreach (var item in ChatClient.Messages)
+            {
+                <div class="@item.CSS">
+                    <Tooltip Color="TooltipColor.Light" Title="@item.SendTime.ToString("d")">
+                        <div class="msg">
+                            <div class="left">
+                                @item.Message
+                                @item.MediaData?.ToRawHtml()
+                            </div>
+                            <div class="right">
+                                @item.SendTime.ToString("t")
+                                <span class="@(item.Mine ? "" : "d-none")">
+                                    <Icon Name="IconName.CheckAll" Color="@(item.IsReaded ? IconColor.Primary : IconColor.Dark)" Size="IconSize.x6" />
+                                </span>
+                            </div>
+                        </div>
+                    </Tooltip>
+                </div>
+            }
+        </div>
+    </div>
+    <div>
+        <hr />
+        <div class="input-group flex-nowrap">
+            <Icon class="btn btn-light input-group-text " Name="IconName.Paperclip" onclick="$('#getFile').click()" />
+            <textarea autofocus class="form-control" placeholder="enter your comment" @bind="@NewMessage" oninput="@_errorMessage = string.Empty" aria-label="Username" aria-describedby="addon-wrapping" />
+            <button class="btn btn-primary" @onclick="@SendMessageDataAsync">Send</button>
+        </div>
+        <InputFile id="getFile" style="display:none" OnChange="@OnFileSelected" />
+        <Alert Color="AlertColor.Info" class="@(string.IsNullOrWhiteSpace(MediaFilename) ? "d-none" : "")">
+            @MediaFilename <Button @onclick="RemoveAttachedFile">X</Button>
+        </Alert>
+    </div>
+    // banner to show current user
+    <div class="alert alert-secondary mt-4" role="alert">
+        <span class="oi oi-person mr-2" aria-hidden="true"></span>
+        <span>You are connected as <b>@UserService.UserName</b></span>
+        <button class="btn btn-sm btn-warning ml-md-auto" @onclick="@DisconnectAsync">Disconnect</button>
+    </div>
+
+}
+<div class="my-3 alert alert-danger @(string.IsNullOrWhiteSpace(_errorMessage) ? "d-none" : "")" role="alert">@_errorMessage</div>
+
+@code {
+    [Parameter]
+    public OrderView? OrderItem { get; set; }
+
+    private bool _isChatting = false; // flag to indicate chat status
+                                      // private string? _username; // name of the user who will be chatting
+    private string? _errorMessage; // on-screen message
+                                   // private List<ChatMessage> _messages = new();// list of messages in chat
+
+    private string? NewMessage { get; set; } // new message input
+    private byte[]? MediaData { get; set; }
+    private string? MediaType { get; set; }
+    public string? MediaFilename { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        ChatClient.OnMessageDataReceived += OnMessageDataReceived;
+        await StartChatAsync();
+        await base.OnInitializedAsync();
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(10);
+            if (ChatClient.Messages.Any())
+                await JSRuntime.InvokeVoidAsync("scrollTop");
+            await base.OnAfterRenderAsync(firstRender);
+        }
+    }
+    public async Task StartChatAsync()
+    {
+        try
+        {// Start chatting and force refresh UI.
+            await Task.Delay(1);
+            PreloadService.Show();
+            _errorMessage = "";
+            await Task.Delay(1);
+            await ChatClient.StartChatAsync(OrderItem);
+            _isChatting = true;
+        }
+        catch (Exception e)
+        {
+            _errorMessage = $"ERROR: Failed to start chat client: {e.Message}";
+            _isChatting = false;
+        }
+        finally
+        {
+            await Task.Delay(1000);
+            PreloadService.Hide();
+        }
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.GetMultipleFiles().FirstOrDefault();
+            _errorMessage = (file?.Size > HubNames.MaxFileSize) ? "Размер файла слишком большой, допустимо максимум 2Мб" : string.Empty;
+            if (file != null && string.IsNullOrEmpty(_errorMessage))
+            {
+                var fileContent = new StreamContent(file.OpenReadStream(HubNames.MaxFileSize));
+                MediaData = await fileContent.ReadAsByteArrayAsync();
+                MediaType = file.ContentType;
+                MediaFilename = file.Name;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ERROR: Loading file is failed: {0}", ex.Message);
+        }
+    }
+
+    private void RemoveAttachedFile()
+    {
+        MediaData = null;
+        MediaType = null;
+        MediaFilename = null;
+    }
+
+    private async Task SendMessageDataAsync()
+    {
+        if (_isChatting && (!string.IsNullOrEmpty(NewMessage) || MediaData != null && MediaType != null))
+        {
+            await ChatClient.SendMessageDataAsync(NewMessage, MediaData, MediaType, MediaFilename!, OrderItem?.Order.Id);
+            NewMessage = "";
+            MediaData = null;
+            MediaType = null;
+            MediaFilename = null;
+            await InvokeAsync(StateHasChanged);// Inform blazor the UI needs updating
+            await JSRuntime.InvokeVoidAsync("scrollTop");
+        }
+    }
+
+    private void OnMessageDataReceived()
+    {
+        InvokeAsync(StateHasChanged);// Inform blazor the UI needs updating
+        JSRuntime.InvokeVoidAsync("scrollTop");
+    }
+
+    private async Task DisconnectAsync()
+    {
+        if (_isChatting)
+        {
+            await ChatClient.DisconnectAsync();
+            _isChatting = false;
+        }
+    }
+}
