@@ -2,35 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Products.Data;
-using ProductsAPI.MQ;
 using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddCors();
 
-// Регистрация сервиса RabbitMqConsumerService
-builder.Services.AddHostedService<RabbitMqConsumerService>();
-
-#region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
-    {
-        c.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
-        c.RequireHttpsMetadata = false;
-        c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
-        c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
-    });
-builder.Services.AddAuthorization();
-#endregion
-
-builder.Services.AddControllers();
-
-var connectionString = ConnectDb.GetConnectionString(builder.Configuration);
-builder.Services.AddDbContext<ProductsDbContext>(opt =>
-    opt.UseSqlServer(connectionString));
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+var url = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
 builder.Services.AddSwaggerGen(c =>
 {
     var securityScheme = new OpenApiSecurityScheme
@@ -38,7 +14,7 @@ builder.Services.AddSwaggerGen(c =>
         Name = "Keycloak",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.OpenIdConnect,
-        OpenIdConnectUrl = new Uri($"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration"),
+        OpenIdConnectUrl = new Uri(url),
         Scheme = "bearer",
         BearerFormat = "JWT",
         Reference = new OpenApiReference
@@ -53,6 +29,32 @@ builder.Services.AddSwaggerGen(c =>
                 {securityScheme, Array.Empty<string>()}
             });
 });
+
+builder.Services.AddCors();
+
+// Регистрация сервиса RabbitMqConsumerService
+//builder.Services.AddHostedService<RabbitMqConsumerService>();
+Config.ConfigAppConfiguration(builder.Configuration);
+#region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
+    {
+        c.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
+        c.RequireHttpsMetadata = false;
+        c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
+    });
+builder.Services.AddAuthorization();
+#endregion
+
+builder.Services.AddControllers();
+
+var connectionString = Config.GetConnectionString(builder.Configuration);
+builder.Services.AddDbContext<ProductsDbContext>(opt =>
+    opt.UseSqlServer(connectionString));
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 

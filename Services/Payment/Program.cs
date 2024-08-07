@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Robokassa.NET;
+using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
+Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 
@@ -31,8 +33,8 @@ builder.Services.AddCors(c => c.AddPolicy("cors", opt =>
 
 builder.Services.AddRobokassa(
                 builder.Configuration["RobokassaOptions:ShopName"],
-                builder.Configuration["RobokassaOptionsTest:Password1"],
-                builder.Configuration["RobokassaOptionsTest:Password2"],
+                builder.Configuration["RobokassaOptions:Password1"],
+                builder.Configuration["RobokassaOptions:Password2"],
                 !builder.Environment.IsProduction());
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

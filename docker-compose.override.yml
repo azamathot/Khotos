@@ -1,35 +1,15 @@
 version: '3.4'
 
-volumes:
-  sqlserver_data:
-
 services:
-  # proxy:
-  #   ports:
-  #     - 80:8080
-  #     - 443:8081
-  #   # restart: always
-  #   volumes:
-  #     - ./nginx/conf/:/etc/nginx/conf.d/:ro
-  #     - ./nginx/ssl/:/etc/nginx/ssl/:ro
-
-  sql:
-    ports: # not actually needed, because the two services are on the same network
-      - "1433:1433" 
-    environment:
-      - ACCEPT_EULA=y
-      - SA_PASSWORD=A&VeryComplex123Password
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-
   webgateway:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
     ports:
       - "8080"
-      - "8081"
+      - "5050:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -39,6 +19,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
+      - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Orders;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
     ports:
       - "8080"
       - "8081"
@@ -51,6 +33,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
     ports:
       - "8080"
       - "8081"
@@ -63,6 +46,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
+      - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Portfolio;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
     ports:
       - "8080"
       - "8081"
@@ -75,9 +60,54 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
+      - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Products;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
     ports:
       - "8080"
       - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    # depends_on:
+    #   - brokerrabbitmq
+
+  chatapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
+      - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Orders;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  brokerrabbitmq:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - RabbitMQ:HostName=rabbitmq
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  khotos:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - WebGatewayUrl=https://webgateway:8081
+      - Keycloak:auth-server-url=http://keycloak:8080/
+    ports:
+      - "8080"
+      - "7000:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

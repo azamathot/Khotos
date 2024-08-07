@@ -1,13 +1,12 @@
-﻿@* @rendermode InteractiveServerRenderMode *@
-
-@using Microsoft.AspNetCore.Components.Web
+﻿@using Microsoft.AspNetCore.Components.Web
 @using SharedModels.Products
 @using KhotosUI.Services
 
 @inject NavigationManager nav
 @inject IHttpClientFactory ClientFactory
+@inject PreloadService PreloadService
 
-<h3>ProductView</h3>
+<Preload LoadingText="Загрузка данных..." />
 
 @if (categories == null)
 {
@@ -36,8 +35,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        PreloadService.Show();
         httpClient = ClientFactory.CreateClient("API");
         await GetData();
+        PreloadService.Hide();
     }
     private async Task GetData()
     {

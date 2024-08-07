@@ -1,0 +1,100 @@
+﻿@page "/myorderdetail"
+
+@rendermode InteractiveServer
+
+@inject OrderService OrderService
+@inject UserService UserService
+@inject DataService dataService
+
+@attribute [Authorize]
+@if (OrderView == null)
+{
+    <p><em>Loading...</em></p>
+    <Alert Color="AlertColor.Warning" class="@(string.IsNullOrWhiteSpace(errorMessage) ? "d-none" : "")">
+        @errorMessage
+    </Alert>
+}
+else
+{
+    <span class="left fw-bold">@OrderView.Order.Username </span>
+    <div class="form-group row">
+        <span class="col-sm-2">Тема:</span>
+        <span class="col-sm-8">@OrderView.Order.Subject</span>
+    </div>
+    <div class="form-group row">
+        <span class="col-sm-2">Описание:</span>
+        <span class="col-sm-8">@OrderView.Order.Description</span>
+    </div>
+    <div class="form-group row text-muted font-small-08">
+        <span class="col-sm-2">Продукт:</span>
+        <span class="col-sm-4">[@OrderView.Order.ProductName]</span>
+        <div class="col-sm-4">
+            <span class="rounded-pill status-black bg-color-@OrderStatus.FromId(OrderView.Order.StatusOrder).Color.ToKnownColor().ToString().ToLower()">
+                @OrderStatus.FromId(OrderView.Order.StatusOrder).Value
+            </span>
+        </div>
+    </div>
+    <br />
+
+    <div class="form-group row mb-1 font-small-08 align-items-center">
+        <span class="col-sm-2">Цена:</span>
+        <span class="col-sm-3">@OrderView.Order.Price</span>
+        <div class="col-sm-3">
+            <span class="rounded-pill status-white bg-color-@PaymentStatus.FromId(OrderView.Order.StatusPayment).Color.ToKnownColor().ToString().ToLower()">
+                @PaymentStatus.FromId(OrderView.Order.StatusPayment).Value
+            </span>
+        </div>
+        <div class="col-sm-3 @(OrderView.Order.Price > 0 && OrderView.Order.StatusPayment < (int)KnownPaymentStatus.FullyPaid ? "" : "d-none" )">
+            <button class="btn btn-primary" @onclick="async ()=>await OrderService.PayClickAsync(OrderView)">Оплатить</button>
+        </div>
+    </div>
+    <div class="form-group row mb-1 font-small-08 align-items-center">
+        <label class="col-sm-2">Прогесс:</label>
+        <div class="col-sm-3">
+            <Progress>
+                <ProgressBar Width="@OrderView.Order.ProgressPercent" Label="@OrderView.Order.ProgressPercent.ToString("0'%")" Color="@BarProgress.GetProgressColor(OrderView.Order.ProgressPercent)" Type="@BarProgress.GetProgressType(OrderView.Order.ProgressPercent)" />
+            </Progress>
+        </div>
+    </div>
+
+    <div class="form-group row text-muted font-small-08 align-items-center">
+        <span class="col-sm-8">
+            - сроки: @OrderView.Order.BeginTime?.ToString("dd.MM.yyyyy") - @OrderView.Order.EndTime?.ToString("dd.MM.yyyyy")
+        </span>
+    </div>
+    <Chat OrderItem="@OrderView"></Chat>
+}
+
+@code {
+    // [Inject] ProtectedSessionStorage ProtectedSessionStore { get; set; }
+
+    private OrderView? OrderView { get; set; }
+    private string? errorMessage;
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            errorMessage = "";
+            OrderView = dataService.SelectedOrder;
+            if (OrderView != null
+                && OrderView.Order.StatusOrder == OrderStatus.Created.StatusId
+                && UserService.IsAdmin)
+            {
+                OrderView.Order.StatusOrder = OrderStatus.UnderConsideration.StatusId;
+                await OrderService.UpdateOrderAsync(OrderView.Order);
+            }
+            else
+                errorMessage = OrderView == null ? "Пользователь не авторизован или Заявка не найдена, пожалуйста выберите еще раз!" : "";
+            await InvokeAsync(StateHasChanged);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task Save()
+    {
+        if (OrderView != null)
+        {
+            await OrderService.UpdateOrderAsync(OrderView.Order);
+        }
+    }
+}

@@ -4,9 +4,9 @@ using Ordering.Data;
 using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
+Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
-
 #region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
@@ -15,6 +15,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         c.RequireHttpsMetadata = false;
         c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
         c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
+
+        c.TokenValidationParameters.NameClaimType = "name";
+        c.TokenValidationParameters.RoleClaimType = "role";
     });
 builder.Services.AddAuthorization();
 #endregion
@@ -22,7 +25,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
-var connectionString = ConnectDb.GetConnectionString(builder.Configuration);
+var connectionString = Config.GetConnectionString(builder.Configuration);
 builder.Services.AddDbContext<OrdersDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 builder.Services.AddCors(c => c.AddPolicy("cors", opt =>

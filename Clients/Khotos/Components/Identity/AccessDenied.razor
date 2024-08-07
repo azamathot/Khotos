@@ -1,0 +1,7 @@
+﻿@page "/account/accessdenied/{returnurl?}"
+<h3>У вас нет прав доступа к этому ресурсу.</h3>
+
+@code {
+    [Parameter]
+    public string? ReturnUrl { get; set; }
+}

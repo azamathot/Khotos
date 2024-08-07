@@ -8,44 +8,19 @@ using SharedModels;
 using SharedModels.Chats;
 
 var builder = WebApplication.CreateBuilder(args);
+Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddCors();
-
 builder.Services.AddSignalR(x =>
 {
     x.EnableDetailedErrors = true;
     x.MaximumReceiveMessageSize = HubNames.MaxFileSize;
 });
 
-#region Keycloak Работающая версия 1 с использованием AddKeycloakAuthentication...
-//builder.Services.AddKeycloakAuthentication(new KeycloakAuthenticationOptions()
-//{
-//    AuthServerUrl = builder.Configuration["Keycloak:auth-server-url"]!,
-//    Realm = builder.Configuration["Keycloak:realm"]!,
-//    Resource = builder.Configuration["Keycloak:resource"]!,
-//    SslRequired = builder.Configuration["Keycloak:ssl-required"]!,
-//    VerifyTokenAudience = false,
-//});
-
-//builder.Services.AddKeycloakAuthorization(new KeycloakProtectionClientOptions()
-//{
-//    AuthServerUrl = builder.Configuration["Keycloak:auth-server-url"]!,
-//    Realm = builder.Configuration["Keycloak:realm"]!,
-//    Resource = builder.Configuration["Keycloak:resource"]!,
-//    SslRequired = builder.Configuration["Keycloak:ssl-required"]!,
-//    VerifyTokenAudience = false
-//});
-#endregion
-
-
 #region Keycloak Работающая версия 2 с использованием JwtBearer...
 string? token = string.Empty;
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
     {
         c.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
@@ -54,6 +29,15 @@ builder.Services.AddAuthentication(options =>
         c.Audience = "account";
         c.SaveToken = true;
 
+        //c.TokenValidationParameters = new TokenValidationParameters
+        //{
+        //    ValidateIssuerSigningKey = true,
+        //    ValidateIssuer = true,
+        //    ValidateAudience = true,
+        //    ValidIssuer = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}", // Замените на адрес вашего сервера Keycloak и realm
+        //    ValidAudience = builder.Configuration["Keycloak:resource"], // Замените на имя вашего приложения
+        //    ClockSkew = TimeSpan.Zero // Устанавливаем ClockSkew равным нулю для предотвращения проблем с несинхронизированным временем
+        //};
 
         c.Events = new JwtBearerEvents
         {
@@ -64,16 +48,18 @@ builder.Services.AddAuthentication(options =>
             },
             OnMessageReceived = context =>
             {
+                //var accessToken = context.Request.Query["access_token"];
+                var accessToken = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
                 // если запрос направлен хабу
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(token) && path.StartsWithSegments(HubNames.HubUrl))
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments(HubNames.HubUrl))
                 {
                     // получаем токен из строки запроса
-                    context.Token = token;
-                    if (!context.Request.Headers.Any(x => x.Key == "Authorization"))
-                    {
-                        context.HttpContext.Request.Headers.Add("Authorization", "Bearer " + token);
-                    }
+                    context.Token = accessToken;
+                    //if (!context.Request.Headers.Any(x => x.Key == "Authorization"))
+                    //{
+                    //    context.HttpContext.Request.Headers.Add("Authorization", "Bearer " + token);
+                    //}
                 }
                 return Task.CompletedTask;
             }
@@ -85,16 +71,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-var connectionString = ConnectDb.GetConnectionString(builder.Configuration);
+var connectionString = Config.GetConnectionString(builder.Configuration);
 builder.Services.AddDbContext<ChatDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<ChatService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGen(c =>
 {
     var securityScheme = new OpenApiSecurityScheme
@@ -118,7 +102,6 @@ builder.Services.AddSwaggerGen(c =>
             });
 });
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -136,6 +119,5 @@ app.UseCors(a => a.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.MapControllers();
 app.MapHub<ChatHub>(HubNames.HubUrl);
-
 
 app.Run();

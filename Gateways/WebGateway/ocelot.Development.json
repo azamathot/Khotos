@@ -1,0 +1,107 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/products/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "UpstreamPathTemplate": "/products/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE" ]
+      //"AuthenticationOptions": {
+      //  "AuthenticationProviderKey": "Bearer"
+      //}
+    },
+    {
+      "DownstreamPathTemplate": "/portfolio/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7002
+        }
+      ],
+      "UpstreamPathTemplate": "/portfolio/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/payment/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ],
+      "UpstreamPathTemplate": "/payment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/ordering/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/ordering/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/chat/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7005
+        }
+      ],
+      "UpstreamPathTemplate": "/chat/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/chathub/{everything}",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7005
+        }
+      ],
+      "UpstreamPathTemplate": "/chathub/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/realms/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/realms/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/resources/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 8080
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/resources/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:5050"
+  }
+}

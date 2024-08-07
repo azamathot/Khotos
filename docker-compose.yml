@@ -1,18 +1,38 @@
 version: '3.4'
 
+volumes:
+  sqlserver_data:
+  keycloak_data:
+  blazorwasm:
+
+
 services:
   # proxy:
   #   image:  nginx:latest
-  #   container_name: proxy
+  #   hostname: proxy
+  #   ports:
+  #     - 80:8080
+  #     - 443:8081
+  #   # restart: always
+  #   volumes:
+  #     - ./nginx/conf/:/etc/nginx/conf.d/:ro
+  #     - ./nginx/ssl/:/etc/nginx/ssl/:ro
 
   sql:
     image: "mcr.microsoft.com/mssql/server:2022-latest"
-    container_name: sql_server2022
     hostname: sql_server2022
+    ports: # not actually needed, because the two services are on the same network
+      - "1433:1433" 
+    environment:
+      - ACCEPT_EULA=y
+      - SA_PASSWORD=A&VeryComplex123Password
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
 
   keycloak:
     image: quay.io/keycloak/keycloak
-    container_name: keycloak
+    hostname: keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -22,10 +42,12 @@ services:
       ]
     ports:
       - 8080:8080
+    volumes:
+      - keycloak_data:/opt/keycloak/data/
 
   rabbitmq:
     image: rabbitmq:3.13-management
-    container_name: rabbitmq
+    hostname: rabbitmq
     ports:
       - "5672:5672" # Порт для AMQP
       - "15672:15672" # Порт для веб-консоли управления
@@ -33,7 +55,7 @@ services:
 
   webgateway:
     image: ${DOCKER_REGISTRY-}webgateway
-    container_name: WebGateway
+    hostname: webgateway
     build:
       context: .
       dockerfile: Gateways/WebGateway/Dockerfile
@@ -41,6 +63,7 @@ services:
 
   orderingapi:
     image: ${DOCKER_REGISTRY-}orderingapi
+    hostname: orderingapi
     build:
       context: .
       dockerfile: Services/Ordering/Dockerfile
@@ -48,7 +71,7 @@ services:
 
   paymentapi:
     image: ${DOCKER_REGISTRY-}paymentapi
-    container_name: PaymentAPI
+    hostname: paymentapi
     build:
       context: .
       dockerfile: Services/Payment/Dockerfile
@@ -56,6 +79,7 @@ services:
 
   portfolioapi:
     image: ${DOCKER_REGISTRY-}portfolioapi
+    hostname: portfolioapi
     build:
       context: .
       dockerfile: Services/Portfolio/Dockerfile
@@ -63,6 +87,52 @@ services:
 
   productsapi:
     image: ${DOCKER_REGISTRY-}productsapi
+    hostname: productsapi
     build:
       context: .
       dockerfile: Services/Products/Dockerfile
+
+
+  chatapi:
+    image: ${DOCKER_REGISTRY-}chatapi
+    hostname: chatapi
+    build:
+      context: .
+      dockerfile: Services/ChatAPI/Dockerfile
+
+
+  brokerrabbitmq:
+    image: ${DOCKER_REGISTRY-}brokerrabbitmq
+    hostname: brokerrabbitmq
+    build:
+      context: .
+      dockerfile: Services/BrokerRabbitMQ/Dockerfile
+
+
+  # khotosui:
+  #   image: ${DOCKER_REGISTRY-}khotosui
+  #   hostname: khotosui
+  #   build:
+  #     context: .
+  #     dockerfile: Clients/KhotosUI/Dockerfile
+  #   ports:
+  #     - "7000:80"
+  #     # - "8081"
+  #   depends_on:
+  #     - productsapi
+  #     - keycloak
+  #     - sql
+  #     - webgateway
+
+  khotos:
+    image: ${DOCKER_REGISTRY-}khotos
+    hostname: khotos
+    build:
+      context: .
+      dockerfile: Clients/Khotos/Dockerfile
+    depends_on:
+      - productsapi
+      - keycloak
+      - sql
+      - webgateway
+

@@ -1,0 +1,41 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<Alert Color="AlertColor.Info">
+    <h3>Сведения о пользователе: </h3>
+    <p>@authMessage</p>
+    @if (claims.Count() > 0)
+    {
+        <h2>User Claims:</h2>
+        <ul>
+            @foreach (var claim in claims)
+            {
+                <li>@claim.Type: @claim.Value</li>
+            }
+        </ul>
+    }
+</Alert>
+
+@code {
+    private string? authMessage;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+
+    protected override Task OnInitializedAsync() => GetClaimsPrincipalData();
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            authMessage = $"{user.Identity.Name} is authenticated.";
+            claims = user.Claims;
+        }
+        else
+        {
+            authMessage = "The user is NOT authenticated.";
+        }
+    }
+}

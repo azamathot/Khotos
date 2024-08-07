@@ -1,0 +1,59 @@
+﻿@rendermode InteractiveServer
+
+<Alert Color="AlertColor.Info">
+    <Button Color="ButtonColor.Primary" onclick="@(()=>LoadConfig("appsettings.json"))">Load Config </Button>
+    <Button Color="ButtonColor.Info" onclick="@(()=>LoadConfig("appsettings.Development.json"))">Load Config Development</Button>
+    <Button Color="ButtonColor.Primary" onclick="@(()=>LoadConfig("appsettings.DockerDev.json"))">Load Config DockerDev</Button>
+    <h1>Настройки приложения</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ключ</th>
+                <th>Значение</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var setting in Settings)
+            {
+                <tr>
+                    <td>@setting.Key</td>
+                    <td>@setting.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</Alert>
+
+@code {
+    [Inject]
+    public IConfiguration Configuration { get; set; }
+    private Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        GetSettings();
+    }
+
+    private void GetSettings()
+    {
+        // Получение настроек из Configuration
+        Settings.Clear();
+        foreach (var key in Configuration.AsEnumerable())
+        {
+            Settings.Add(key.Key, key.Value);
+        }
+    }
+
+    private void LoadConfig(string filename = "appsettings.json")
+    {
+        IConfigurationBuilder builder = Configuration as IConfigurationBuilder;
+
+        if (builder != null )
+        {
+            builder.AddJsonFile(filename, optional: true, reloadOnChange: true);
+        }
+        GetSettings();
+    }
+}

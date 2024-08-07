@@ -1,0 +1,14 @@
+﻿@page "/refresh-token"
+@inject NavigationManager NavigationManager
+
+<h3>Refreshing token...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000); // Имитируем задержку
+
+        // Перенаправляем обратно на исходную страницу
+        NavigationManager.NavigateTo(NavigationManager.BaseUri);
+    }
+}

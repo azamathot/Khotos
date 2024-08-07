@@ -1,0 +1,47 @@
+﻿@using System.Security.Claims
+@using BlazorBootstrap
+@using Microsoft.AspNetCore.Components.Authorization
+
+@rendermode InteractiveServer
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<Alert Color="AlertColor.Info">
+    <h3>Сведения о пользователе: </h3>
+    <p>@authMessage</p>
+    <span>admin: @isAdmin</span>
+    @if (claims.Count() > 0)
+    {
+        <h2>User Claims:</h2>
+        <ul>
+            @foreach (var claim in claims)
+            {
+                <li>@claim.Type: @claim.Value</li>
+            }
+        </ul>
+    }
+</Alert>
+
+@code {
+    private string? authMessage;
+    private bool isAdmin;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+
+    protected override Task OnInitializedAsync() => GetClaimsPrincipalData();
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            authMessage = $"{user.Identity.Name} is authenticated.";
+            claims = user.Claims;
+            isAdmin = user.IsInRole(RoleConsts.Admin);
+        }
+        else
+        {
+            authMessage = "The user is NOT authenticated.";
+        }
+    }
+}

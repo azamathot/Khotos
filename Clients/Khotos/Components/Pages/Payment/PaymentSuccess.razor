@@ -1,0 +1,77 @@
+﻿@page "/SuccessPayment"
+
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+@* @rendermode InteractiveServer *@
+@inject NavigationManager NavigationManager
+@inject OrderService OrderService
+
+<Alert Color="AlertColor.Success">
+    <h3>Оплата прошла успешно!</h3>
+</Alert>
+@* <div class="form-group row">
+    <span class="col-sm-2">@OutSum</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@InvId</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@SignatureValue</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@Shp_login</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@Shp_email</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@Shp_name</span>
+</div>
+<div class="form-group row">
+    <span class="col-sm-2">@Shp_oplata</span>
+</div>
+ *@
+@code {
+    public decimal OutSum;
+    public int InvId;
+    public string? SignatureValue;
+    public string? Shp_login;
+    public string? Shp_name;
+    public string? Shp_email;
+    public decimal Shp_oplata;
+    public int Shp_orderid;
+    public string? Shp_productname;
+    public bool IsTest;
+    public string? Culture;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitFromQueryParameter();
+        await UpdateOrder();
+        await base.OnInitializedAsync();
+    }
+
+    private void InitFromQueryParameter()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        decimal.TryParse(queryParameters["OutSum"], out OutSum);
+        int.TryParse(queryParameters["InvId"], out InvId);
+        SignatureValue = WebUtility.UrlDecode(queryParameters["SignatureValue"]);
+        Shp_login = WebUtility.UrlDecode(queryParameters["Shp_login"]);
+        Shp_name = WebUtility.UrlDecode(queryParameters["Shp_name"]);
+        Shp_email = WebUtility.UrlDecode(queryParameters["Shp_email"]);
+        decimal.TryParse(queryParameters["Shp_oplata"], out Shp_oplata);
+        int.TryParse(queryParameters["Shp_orderid"], out Shp_orderid);
+        Shp_productname = WebUtility.UrlDecode(queryParameters["Shp_productname"]);
+        IsTest = "1".Equals(queryParameters["IsTest"]);
+        Culture = WebUtility.UrlDecode(queryParameters["Culture"]);
+    }
+
+    private async Task UpdateOrder()
+    {
+        await OrderService.UpdateOrderPaymentStatusAsync(InvId, (int)KnownPaymentStatus.FullyPaid);
+    }
+}

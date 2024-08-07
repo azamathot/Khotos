@@ -1,6 +1,7 @@
 using BrokerRabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
+//Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddSingleton<IRabbitMQClient, RabbitMQClient>(); // Регистрация RabbitMQClient

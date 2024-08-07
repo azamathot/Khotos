@@ -1,0 +1,128 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/products/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "productsapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/products/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "Options" ]
+      //"AuthenticationOptions": {
+      //  "AuthenticationProviderKey": "Bearer"
+      //}
+    },
+    {
+      "DownstreamPathTemplate": "/portfolio/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "portfolioapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/portfolio/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "Options" ]
+    },
+    {
+      "DownstreamPathTemplate": "/payment/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "paymentapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/payment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "Options" ]
+    },
+    {
+      "DownstreamPathTemplate": "/ordering/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "orderingapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/ordering/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "Options" ],
+    },
+    {
+      "DownstreamPathTemplate": "/chat/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chatapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/chat/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "Options" ]
+    },
+    {
+      "DownstreamPathTemplate": "/chathub/{everything}",
+      "DownstreamScheme": "wss",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "chatapi",
+          "Port": 8081
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/chathub/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/realms/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "keycloak",
+          "Port": 8080
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/realms/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/resources/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "keycloak",
+          "Port": 8080
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/resources/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    },
+    {
+      "DownstreamPathTemplate": "/js/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "keycloak",
+          "Port": 8080
+        }
+      ],
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "UpstreamPathTemplate": "/js/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "POST", "DELETE", "OPTIONS", "CONNECT" ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "https://webgateway:8081"
+    //"SkipSslValidation": true
+  }
+}

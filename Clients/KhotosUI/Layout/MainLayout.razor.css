@@ -8,9 +8,24 @@ main {
     flex: 1;
 }
 
-.sidebar {
+.sidebar0 {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
 }
+
+.sidebar {
+    background-image: linear-gradient(180deg, #085fff 30%, #00ff90 100%);
+    animation: sidebarAnimation 6s linear 1; /* 5 секунд, линейно, бесконечно */
+}
+
+@keyframes sidebarAnimation {
+    0% {
+        background-image: linear-gradient(180deg, #085fff 25%, #ff0000 100%);
+    }
+    100% {
+        background-image: linear-gradient(180deg, #085fff 30%, #00ff90 100%);
+    }
+}
+
 
 .top-row {
     background-color: #f7f7f7;

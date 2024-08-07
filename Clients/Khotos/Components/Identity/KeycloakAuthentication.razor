@@ -1,0 +1,190 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Server
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Components.Web
+@using System.Text.Json
+
+<h3>KeycloakAuthentication</h3>
+
+@code {
+    // Обработка обратного вызова после аутентификации
+    [Parameter]
+    public string Action { get; set; }
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    [Inject]
+    public AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+    [Inject]
+    public HttpClient Http { get; set; }
+
+    [Inject]
+    public IConfiguration Configuration { get; set; }
+
+
+    private string _loginUrl;
+    private string _callbackUrl;
+    private string _accessToken;
+
+    // Замените эти значения на ваши конфигурации Keycloak
+    private string KeycloakRealm = "your-realm";
+    private string KeycloakClientId = "your-client-id";
+    private string KeycloakAuthServerUrl = "http://your-keycloak-server:8080/auth";
+    private string? KeycloakClientSecret;
+
+    protected override async Task OnInitializedAsync()
+    {
+        KeycloakRealm = Configuration["Keycloak:realm"];
+        KeycloakClientId = Configuration["Keycloak:resource"];
+        KeycloakAuthServerUrl = Configuration["Keycloak:auth-server-url"];
+        KeycloakClientSecret = Configuration["Keycloak:ClientSecret"];
+
+        _callbackUrl = NavigationManager.BaseUri + "authentication/callback";
+
+        _loginUrl = $"{KeycloakAuthServerUrl}/realms/{KeycloakRealm}/protocol/openid-connect/auth?" +
+            $"client_id={KeycloakClientId}" +
+            $"&redirect_uri={_callbackUrl}" +
+            "&response_type=code" +
+            "&scope=openid";
+    }
+
+    public void Login()
+    {
+        NavigationManager.NavigateTo(_loginUrl);
+    }
+
+    public async Task Logout()
+    {
+        // Очистите токен доступа
+        _accessToken = null;
+
+        // Выход из системы Keycloak
+        await Http.PostAsync($"{KeycloakAuthServerUrl}/realms/{KeycloakRealm}/protocol/openid-connect/logout", null);
+
+        // Перенаправьте пользователя на страницу входа
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Action == "callback")
+        {
+            var uri = new Uri(NavigationManager.Uri);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+            var code = query["code"];
+            if (!string.IsNullOrEmpty(code))
+            {
+                // Получите токен доступа от Keycloak
+                _accessToken = await GetAccessToken(code);
+
+                // Обновите состояние аутентификации
+                await UpdateAuthenticationState();
+            }
+        }
+        else if (Action == "login")
+        {
+            Login();
+        }
+        else if (Action == "logout")
+        {
+            await Logout();
+        }
+    }
+
+    // Получение токена доступа
+    private async Task<string> GetAccessToken(string code)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post,
+            $"{KeycloakAuthServerUrl}/realms/{KeycloakRealm}/protocol/openid-connect/token");
+
+        // Проверяем, нужно ли использовать "client_secret"
+        var useClientSecret = !string.IsNullOrEmpty(KeycloakClientSecret);
+
+        var contentDictionary = new Dictionary<string, string>
+    {
+        { "grant_type", "authorization_code" },
+        { "client_id", KeycloakClientId },
+        { "code", code },
+        { "redirect_uri", _callbackUrl }
+    };
+
+        // Добавляем "client_secret" только если он не пустой
+        if (useClientSecret)
+        {
+            contentDictionary.Add("client_secret", KeycloakClientSecret);
+        }
+
+        request.Content = new FormUrlEncodedContent(contentDictionary);
+
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            // Читаем ответ как строку
+            return tokenResponse.access_token;
+        }
+        else
+        {
+            // Обработка ошибок
+            return null;
+        }
+    }
+
+    // Обновление состояния аутентификации
+    private async Task UpdateAuthenticationState()
+    {
+        // Получаем информацию о пользователе
+        var userInfo = await GetUserInfo(_accessToken);
+
+        List<Claim> claims = new List<Claim>() { new Claim("access_token", _accessToken) };
+        foreach (var item in userInfo)
+            claims.Add(new Claim(item.Key, item.Value.ToString()));
+        // Создайте ClaimsIdentity с полученной информацией о пользователе
+        var claimsIdentity = new ClaimsIdentity(claims, "KeycloakAuthentication");
+
+        // Создайте AuthenticationState
+        var authenticationState = new AuthenticationState(new ClaimsPrincipal(claimsIdentity));
+
+        // Обновите состояние аутентификации, используя существующий AuthenticationStateProvider
+        ((ServerAuthenticationStateProvider)AuthenticationStateProvider).SetAuthenticationState(Task.FromResult(authenticationState));
+
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+        var isAuthenticated = user.Identity.IsAuthenticated;
+        // Перенаправьте пользователя на домашнюю страницу
+        NavigationManager.NavigateTo("/");
+    }
+
+    // Получение информации о пользователе из Keycloak API
+    private async Task<Dictionary<string, object>> GetUserInfo(string accessToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{KeycloakAuthServerUrl}/realms/{KeycloakRealm}/protocol/openid-connect/userinfo");
+        request.Headers.Add("Authorization", $"Bearer {accessToken}");
+
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var userInfoString = await response.Content.ReadAsStringAsync(); 
+            // Парсинг строки с информацией о пользователе
+            // ... (код для парсинга строки userInfoString)
+            var userInfo = JsonSerializer.Deserialize<Dictionary<string, object>>(userInfoString);
+            return userInfo; // Вернуть словарь с информацией о пользователе
+        }
+        else
+        {
+            // Обработка ошибок
+            return null;
+        }
+    }
+    // Модель токена доступа
+    private class TokenResponse
+    {
+        public string access_token { get; set; }
+    }
+
+}
+

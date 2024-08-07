@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
+@using System.Security.Claims
+@using Microsoft.AspNetCore.WebUtilities
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    // Обработка обратного вызова после аутентификации
+    [Parameter]
+    public string Action { get; set; }
+
+    [Parameter]
+    public string? ReturnUrl { get; set; }
+
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    public async Task Login()
+    {
+        await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties
+            {
+                RedirectUri = ReturnUrl ?? "/"
+            });
+    }
+
+    public async Task Logout()
+    {
+        AuthenticationProperties properties = new AuthenticationProperties()
+            {
+                RedirectUri = Navigation.BaseUri, // $"/"
+            };
+        // sign-out from the default authentication scheme
+        await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, properties);
+        // sign-out from the cookie authentication scheme
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Action == "login")
+        {
+            await Login();
+        }
+        else if (Action == "logout")
+        {
+            await Logout();
+        }
+    }
+}

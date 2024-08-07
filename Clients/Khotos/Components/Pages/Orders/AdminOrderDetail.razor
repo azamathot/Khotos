@@ -1,0 +1,107 @@
+﻿@page "/adminorderdetail"
+
+@rendermode InteractiveServer
+
+@inject OrderService OrderService
+@inject UserService UserService
+@inject DataService dataService
+
+@attribute [Authorize(Roles = RoleConsts.Admin)]
+@if (OrderView == null)
+{
+    <p><em>Loading...</em></p>
+    <Alert Color="AlertColor.Warning" class="@(string.IsNullOrWhiteSpace(errorMessage) ? "d-none" : "")">
+        @errorMessage
+    </Alert>
+}
+else
+{
+    <a class="left" href="#">@OrderView.Order.Username</a>
+    <div class="form-group row">
+        <span class="col-sm-2">Тема:</span>
+        <span class="col-sm-8">@OrderView.Order.Subject</span>
+    </div>
+    <div class="form-group row">
+        <span class="col-sm-2">Описание:</span>
+        <span class="col-sm-8">@OrderView.Order.Description</span>
+    </div>
+    <div class="form-group row text-muted font-small-08">
+        <span class="col-sm-2">Продукт:</span>
+        <span class="col-sm-4">[@OrderView.Order.ProductName]</span>
+        <div class="col-sm-4">
+            <select @bind="@OrderView.Order.StatusOrder"
+                    class="rounded-pill status-black bg-color-@OrderStatus.FromId(OrderView.Order.StatusOrder).Color.ToKnownColor().ToString().ToLower()">
+                @foreach (KnownOrderStatus status in Enum.GetValues(typeof(KnownOrderStatus)))
+                {
+                    var orderStatus = OrderStatus.FromId((short)status);
+                    <option class="rounded-pill bg-color-@orderStatus.Color.Name.ToLower()" value="@orderStatus.StatusId">@orderStatus.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <br />
+
+    <div class="form-group row mb-1 font-small-08 align-items-center">
+        <span class="col-sm-2">Цена:</span>
+        <div class="col-sm-3">
+            <CurrencyInput TValue="int" @bind-Value="@OrderView.Order.Price" Locale="ru-RU" />
+        </div>
+        <div class="col-sm-3">
+            <span class="rounded-pill status-white bg-color-@PaymentStatus.FromId(OrderView.Order.StatusPayment).Color.ToKnownColor().ToString().ToLower()">
+                @PaymentStatus.FromId(OrderView.Order.StatusPayment).Value
+            </span>
+        </div>
+    </div>
+    <div class="form-group row mb-1 font-small-08 align-items-center">
+        <label class="col-sm-2">Прогесс:</label>
+        <div class="col-sm-3">
+            <NumberInput TValue="int" @bind-Value="@OrderView.Order.ProgressPercent" EnableMinMax="true" Min="0" Max="100" Placeholder="%" />
+        </div>
+    </div>
+
+    <div class="form-group row text-muted font-small-08 align-items-center">
+        <span class="col-sm-2">сроки:</span>
+        <div class="col-sm-3">
+            <DateInput TValue="DateOnly?" @bind-Value="OrderView.Order.BeginTime" />
+        </div>
+        -
+        <div class="col-sm-3">
+            <DateInput TValue="DateOnly?" @bind-Value="OrderView.Order.EndTime" />
+        </div>
+    </div>
+    <Button Color="ButtonColor.Primary" Size="Size.ExtraSmall" @onclick="Save">Сохранить</Button>
+    <Chat OrderItem="@OrderView"></Chat>
+}
+
+@code {
+
+    private OrderView? OrderView { get; set; }
+    private string? errorMessage;
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            errorMessage = "";
+            OrderView = dataService.SelectedOrder;
+            if (OrderView != null
+                && OrderView.Order.StatusOrder == OrderStatus.Created.StatusId
+                && UserService.IsAdmin)
+            {
+                OrderView.Order.StatusOrder = OrderStatus.UnderConsideration.StatusId;
+                await OrderService.UpdateOrderAsync(OrderView.Order);
+            }
+            else
+                errorMessage = OrderView == null ? "Пользователь не авторизован или Заявка не найдена, пожалуйста выберите еще раз!" : "";
+            await InvokeAsync(StateHasChanged);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task Save()
+    {
+        if (OrderView != null)
+        {
+            await OrderService.UpdateOrderAsync(OrderView.Order);
+        }
+    }
+}

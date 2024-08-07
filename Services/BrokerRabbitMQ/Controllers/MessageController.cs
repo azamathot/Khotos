@@ -7,16 +7,18 @@ namespace BrokerRabbitMQ.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IRabbitMQClient _rabbitMQClient;
+        private readonly IConfiguration _configuration;
 
-        public MessageController(IRabbitMQClient rabbitMQClient)
+        public MessageController(IRabbitMQClient rabbitMQClient, IConfiguration configuration)
         {
             _rabbitMQClient = rabbitMQClient;
+            _configuration = configuration;
         }
 
         [HttpPost]
         public IActionResult SendMessage(string message)
         {
-            _rabbitMQClient.PublishMessage("my_queue", message);
+            _rabbitMQClient.PublishMessage(_configuration["RabbitMq:QueueName"], message);
 
             return Ok("Сообщение отправлено");
         }

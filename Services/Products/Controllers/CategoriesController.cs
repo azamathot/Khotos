@@ -28,6 +28,7 @@ namespace Products.Controllers
             return await _context.Categories.ToListAsync();
         }
 
+        //[Authorize]
         [HttpGet("getcategorieslink")]
         public async Task<ActionResult<IList<Category>>> GetCategoriesWithLink()
         {

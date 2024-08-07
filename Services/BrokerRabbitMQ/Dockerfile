@@ -10,6 +10,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Services/BrokerRabbitMQ/BrokerRabbitMQ.csproj", "Services/BrokerRabbitMQ/"]
+COPY ["Shared/SharedModels/SharedModels.csproj", "Shared/SharedModels/"]
 RUN dotnet restore "./Services/BrokerRabbitMQ/BrokerRabbitMQ.csproj"
 COPY . .
 WORKDIR "/src/Services/BrokerRabbitMQ"

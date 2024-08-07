@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+<AuthorizeView>
+    <Authorized>
+        Hello, @context.User.Identity?.Name!
+        <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <button class="nav-link btn btn-link" @onclick="BeginLogin">Log in</button>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+    public void BeginLogOut()
+    {
+        Navigation.NavigateToLogout("authentication/logout");
+    }
+
+    public void BeginLogin()
+    {
+        Navigation.NavigateToLogout($"authentication/login/{Uri.EscapeDataString(Navigation.Uri)}");
+    }
+
+}

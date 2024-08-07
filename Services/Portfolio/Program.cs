@@ -4,6 +4,7 @@ using Portfolio.Data;
 using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
+Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 #region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
@@ -20,7 +21,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
-var connectionString = ConnectDb.GetConnectionString(builder.Configuration);
+var connectionString = Config.GetConnectionString(builder.Configuration);
 builder.Services.AddDbContext<PortfolioDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 builder.Services.AddCors(c => c.AddPolicy("cors", opt =>

@@ -6,8 +6,8 @@
     <DockerPublishLocally>False</DockerPublishLocally>
     <ProjectGuid>465c762d-5e56-4355-8c53-e3b61964fa04</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
-    <DockerServiceName>webui_wasm</DockerServiceName>
+    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/</DockerServiceUrl>
+    <DockerServiceName>khotos</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.override.yml">
