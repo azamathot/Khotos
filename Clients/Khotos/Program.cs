@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-SharedModels.Config.ConfigAppConfiguration(builder.Configuration);
+//SharedModels.Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

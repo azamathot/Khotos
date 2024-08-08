@@ -9,8 +9,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-//SharedModels.Config.ConfigAppConfiguration(builder.Configuration);
-
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
@@ -23,7 +21,8 @@ builder.Services
     .AddCascadingAuthenticationState()
     .AddOidcAuthentication(options =>
     {
-        options.ProviderOptions.Authority = builder.Configuration["Keycloak:auth-server-url"] + "/realms/" + builder.Configuration["Keycloak:realm"];
+        //options.ProviderOptions.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}/realms/{builder.Configuration["Keycloak:realm"]}";
+        options.ProviderOptions.Authority = $"{builder.Configuration["WebGatewayUrl"]}/realms/{builder.Configuration["Keycloak:realm"]}";
         options.ProviderOptions.ClientId = builder.Configuration["Keycloak:resource"];
         options.ProviderOptions.MetadataUrl = builder.Configuration["Keycloak:auth-server-url"] + "/realms/" + builder.Configuration["Keycloak:realm"] + "/.well-known/openid-configuration";
         options.ProviderOptions.ResponseType = OpenIdConnectResponseType.Code; //"id_token token";//"code";//

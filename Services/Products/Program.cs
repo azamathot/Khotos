@@ -6,7 +6,26 @@ using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var url = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
+builder.Services.AddCors();
+
+// Регистрация сервиса RabbitMqConsumerService
+//builder.Services.AddHostedService<RabbitMqConsumerService>();
+#region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
+    {
+        c.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
+        c.RequireHttpsMetadata = false;
+        c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
+
+        c.TokenValidationParameters.ValidateIssuer = false;//отключаю временно, чтобы измежать конфликта (localhost:8080 и keycloak:8080) при работе с контейнерами докер 
+    });
+builder.Services.AddAuthorization();
+#endregion
+builder.Services.AddControllers();
+
+var url = $"http://localhost:8080/realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
 builder.Services.AddSwaggerGen(c =>
 {
     var securityScheme = new OpenApiSecurityScheme
@@ -29,25 +48,6 @@ builder.Services.AddSwaggerGen(c =>
                 {securityScheme, Array.Empty<string>()}
             });
 });
-
-builder.Services.AddCors();
-
-// Регистрация сервиса RabbitMqConsumerService
-//builder.Services.AddHostedService<RabbitMqConsumerService>();
-Config.ConfigAppConfiguration(builder.Configuration);
-#region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
-    {
-        c.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
-        c.RequireHttpsMetadata = false;
-        c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
-        c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
-    });
-builder.Services.AddAuthorization();
-#endregion
-
-builder.Services.AddControllers();
 
 var connectionString = Config.GetConnectionString(builder.Configuration);
 builder.Services.AddDbContext<ProductsDbContext>(opt =>

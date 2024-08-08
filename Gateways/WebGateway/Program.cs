@@ -19,8 +19,8 @@ builder.Services
         c.RequireHttpsMetadata = false;
         c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
         c.Audience = "account";
-        c.TokenValidationParameters.NameClaimType = "name";
-        c.TokenValidationParameters.RoleClaimType = "role";
+
+        c.TokenValidationParameters.ValidateIssuer = false;
     });
 builder.Services.AddAuthorization();
 

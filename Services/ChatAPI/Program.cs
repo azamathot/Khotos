@@ -8,7 +8,6 @@ using SharedModels;
 using SharedModels.Chats;
 
 var builder = WebApplication.CreateBuilder(args);
-Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddCors();
@@ -28,6 +27,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
         c.Audience = "account";
         c.SaveToken = true;
+        c.TokenValidationParameters.ValidateIssuer = false;//отключаю временно, чтобы измежать конфликта (localhost:8080 и keycloak:8080) при работе с контейнерами докер 
 
         //c.TokenValidationParameters = new TokenValidationParameters
         //{

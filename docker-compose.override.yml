@@ -7,12 +7,18 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - Keycloak:auth-server-url=http://keycloak:8080/
+      - Ocelot__Certificates__Default__Path=/home/app/server.crt
+      - Ocelot__Certificates__Default__Password=!Wsxedc99
     ports:
       - "8080"
       - "5050:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ./Gateways/WebGateway/ocelot.DockerDev.json:/home/app/ocelot.Development.json  # Монтируем файл конфигурации
+      - ./nginx/ssl/server.key:/home/app/server.key
+      - ./nginx/ssl/server.crt:/home/app/server.crt
+
 
   orderingapi:
     environment:
@@ -23,7 +29,7 @@ services:
       - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Orders;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
     ports:
       - "8080"
-      - "8081"
+      - "7004:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
@@ -62,9 +68,10 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - Keycloak:auth-server-url=http://keycloak:8080/
       - ConnectionStrings:DefaultConnection=Server=sql_server2022;Database=Khotos_Products;User Id=SA;Password=[password];MultipleActiveResultSets=true;Trust Server Certificate=True;Encrypt=False
+      - RabbitMQ:HostName=rabbitmq
     ports:
       - "8080"
-      - "8081"
+      - "7001:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

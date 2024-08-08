@@ -15,25 +15,25 @@ namespace SharedModels
             return connectString ?? throw new InvalidOperationException($"Connection string 'DefaultConnection' not found.");
         }
 
-        public static void ConfigAppConfiguration(ConfigurationManager config)
-        {
-            if (config["ENVIRONMENT"] == "Development"
-                && config["DOTNET_RUNNING_IN_CONTAINER"] == "true")
-            {
-                config.AddJsonFile("appsettings.DockerDev.json", optional: true, reloadOnChange: true);
-            }
-        }
+        //public static void ConfigAppConfiguration(ConfigurationManager config)
+        //{
+        //    if (config["ENVIRONMENST"] == "Development"
+        //        && config["DOTNET_RUNNING_IN_CONTAINER"] == "true")
+        //    {
+        //        config.AddJsonFile("appsettings.DockerDev.json", optional: true, reloadOnChange: true);
+        //    }
+        //}
 
-        public static void ConfigAppConfiguration<T>(T config) where T : IConfiguration
-        {
-            // Получаем IConfigurationBuilder
-            IConfigurationBuilder builder = config as IConfigurationBuilder;
+        //public static void ConfigAppConfiguration<T>(T config) where T : IConfiguration
+        //{
+        //    // Получаем IConfigurationBuilder
+        //    IConfigurationBuilder builder = config as IConfigurationBuilder;
 
-            if (builder != null && config["ENVIRONMENT"] == "Development" && config["DOTNET_RUNNING_IN_CONTAINER"] == "true")
-            {
-                //builder.AddJsonFile("appsettings.DockerDev.json", optional: true, reloadOnChange: true);
-                builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            }
-        }
+        //    if (builder != null && config["ENVIRONMENT"] == "Development" && config["DOTNET_RUNNING_IN_CONTAINER"] == "true")
+        //    {
+        //        //builder.AddJsonFile("appsettings.DockerDev.json", optional: true, reloadOnChange: true);
+        //        builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        //    }
+        //}
     }
 }

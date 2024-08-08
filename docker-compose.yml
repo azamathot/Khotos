@@ -6,6 +6,10 @@ volumes:
   blazorwasm:
 
 
+networks:
+  khotos_hostnet:
+  internalnet:
+
 services:
   # proxy:
   #   image:  nginx:latest
@@ -135,4 +139,3 @@ services:
       - keycloak
       - sql
       - webgateway
-

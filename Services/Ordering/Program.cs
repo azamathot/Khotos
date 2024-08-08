@@ -4,7 +4,6 @@ using Ordering.Data;
 using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
-Config.ConfigAppConfiguration(builder.Configuration);
 
 // Add services to the container.
 #region Keycloak Работающая версия 2 с использованием AddOpenIdConnect...
@@ -15,9 +14,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         c.RequireHttpsMetadata = false;
         c.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
         c.Audience = "account";// $"{builder.Configuration["Keycloak:resource"]}"; ;
-
-        c.TokenValidationParameters.NameClaimType = "name";
-        c.TokenValidationParameters.RoleClaimType = "role";
+        c.TokenValidationParameters.ValidateIssuer = false;//отключаю временно, чтобы измежать конфликта (localhost:8080 и keycloak:8080) при работе с контейнерами докер 
     });
 builder.Services.AddAuthorization();
 #endregion

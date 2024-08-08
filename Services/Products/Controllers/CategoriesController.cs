@@ -18,6 +18,7 @@ namespace Products.Controllers
         }
 
         // GET: api/Categories
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
