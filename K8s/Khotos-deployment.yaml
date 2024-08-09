@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: khotos
+  namespace: khotos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: khotos
+  template:
+    metadata:
+      labels:
+        app: khotos
+    spec:
+      containers:
+      - name: khotos
+        image: azamathot/khotos:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: khotos
+  namespace: khotos
+spec:
+  selector:
+    app: khotos
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
