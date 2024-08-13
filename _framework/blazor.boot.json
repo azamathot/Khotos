@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "KhotosUI",
   "resources": {
-    "hash": "sha256-0dAJerHqUZ0UjnuuZt6LX8OKxJ+9u7F30aDWnWoufyc=",
+    "hash": "sha256-PqWdIU2hImfQVVwBcGI1vn8XpcpgODkmkGefzl8AnaE=",
     "jsModuleNative": {
       "dotnet.native.8.0.7.pvkr2na9g4.js": "sha256-tFsxPBbhkdn6GKNBKvCRLzrfAHdyM86odYTe0MtrwMk="
     },
@@ -18,7 +18,7 @@
     },
     "assembly": {
       "BlazorBootstrap.wasm": "sha256-DXl738A3nveFxYK+NWkxvHdTmicdO6btBT/VduMi0Co=",
-      "KhotosUI.wasm": "sha256-+ySRU4bJAoOWiPdx3lwqDyIbO25dTmRaejzhGbF6qv8=",
+      "KhotosUI.wasm": "sha256-0dlcJzl8XN8eipclsdX5QWbHrzbmhB/sSAAMrJtBGE8=",
       "Microsoft.AspNetCore.Authorization.wasm": "sha256-YiZSIdWVIEGMkfDyZJY75Bd1MHL5wNkYILB99Z2ayH0=",
       "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-oz9vW1rbrNpY5+Jg4IIv9XT4mGhtIVb7uFEkQhSyOTk=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-cmY8k/YlGUoMD2xiFJOph67yKoS9CSprueGbqIboQak=",
@@ -63,7 +63,7 @@
       "Microsoft.JSInterop.wasm": "sha256-2Ud/DkOmibHrv34qW31bJDYOyq1rNQ9/9Jr0/lFqTXs=",
       "Microsoft.JSInterop.WebAssembly.wasm": "sha256-rhDkGvVEd5YGb2JsVk1xQC7gCF8TXNfpDfo9dGFhuyI=",
       "Newtonsoft.Json.wasm": "sha256-GlXMWKvDs45M2pACoR3Y4Qh8mcrOZGljqmvJY+6JZ5s=",
-      "SharedModels.wasm": "sha256-oVHb9stBzNWubu0wfY1ssGmIWY/2xDO6/Gsx3km98FU=",
+      "SharedModels.wasm": "sha256-FLPomE/nCqXN34A1+IMghjDHXLXKuxQCVo/Lra5dwrQ=",
       "System.Collections.Concurrent.wasm": "sha256-YXEbQiwoXMfR2y/JVdPYSNfRER75UxVKNP1AWfdNi6U=",
       "System.Collections.Immutable.wasm": "sha256-zXmF9ePsQGOHAiDj6MP135VrC7QBQ2R9laucb5/F7nk=",
       "System.Collections.NonGeneric.wasm": "sha256-L/os812+hUzwY5qync248AikvTEzxxxxolIj1nepj4w=",
