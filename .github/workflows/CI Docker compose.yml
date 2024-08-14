@@ -16,7 +16,7 @@ jobs:
           context: .
           file: docker-compose.yml
           push: true
-          tags: ${{ runner.os }}-latest
+          tags: ${{ toLower(runner.os) }}-latest
       - name: Run Docker Compose services
         run: docker-compose up -d
       - name: Run tests
