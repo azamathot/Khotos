@@ -110,7 +110,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
-      - WebGatewayUrl=https://webgateway:8081
+      - WebGatewayUrl=https://webgateway:8081/
       - Keycloak:auth-server-url=http://keycloak:8080/
     ports:
       - "8080"

@@ -120,13 +120,17 @@ services:
   #     context: .
   #     dockerfile: Clients/KhotosUI/Dockerfile
   #   ports:
-  #     - "7000:80"
+  #     - "7010:80"
   #     # - "8081"
   #   depends_on:
   #     - productsapi
   #     - keycloak
   #     - sql
   #     - webgateway
+  #   environment:
+  #     - WebGatewayUrl=https://webgateway:8081/
+  #     - Keycloak:auth-server-url=http://keycloak:8080/
+
 
   khotos:
     image: ${DOCKER_REGISTRY-}khotos

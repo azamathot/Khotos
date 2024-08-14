@@ -68,7 +68,7 @@ builder.Services.AddCascadingAuthenticationState().AddAuthentication(options =>
         //это нужно в Development в docker, чтобы шлюз не конфликтовал
 
         options.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
-        options.Authority = $"{builder.Configuration["WebGatewayUrl"]}/realms/{builder.Configuration["Keycloak:realm"]}";
+        options.Authority = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}";
         options.ClientId = builder.Configuration["Keycloak:resource"];
         options.GetClaimsFromUserInfoEndpoint = true;
         options.MapInboundClaims = true;
