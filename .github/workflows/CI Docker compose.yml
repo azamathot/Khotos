@@ -1,0 +1,25 @@
+name: Docker Compose CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and run  Docker Compose services
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: docker-compose.yml
+          push: true
+          tags: linux-latest
+      - name: Run Docker Compose services
+        run: docker-compose up -d
+      - name: Run tests
+        run: npm run test
+      - name: Stop Docker Compose services
+        run: docker-compose down
