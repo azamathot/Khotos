@@ -10,6 +10,12 @@ networks:
   khotos_hostnet:
   internalnet:
 
+
+secrets:
+  DB_PASSWORD:
+    file: .env
+    
+
 services:
   # proxy:
   #   image:  nginx:latest
@@ -29,9 +35,11 @@ services:
       - "1433:1433" 
     environment:
       - ACCEPT_EULA=y
-      - SA_PASSWORD=A&VeryComplex123Password
+      - SA_PASSWORD=DB_PASSWORD
     volumes:
       - sqlserver_data:/var/opt/mssql
+    secrets:
+      - DB_PASSWORD
 
 
   keycloak:

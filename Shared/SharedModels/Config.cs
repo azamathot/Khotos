@@ -10,7 +10,7 @@ namespace SharedModels
             //string ConnectNameString = _isRunInContainer ? "DefaultConnectionContainerIn" : "DefaultConnectionLocalDb";
             //var isRunInDocker = builder.Configuration["DOTNET_RUNNING_IN_CONTAINER"];
             //var isRunInDocker1 = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER");
-            string password = config["PasswordDb"];
+            string password = config["DB_PASSWORD"];
             string connectString = config.GetConnectionString("DefaultConnection")?.Replace("[password]", password);
             return connectString ?? throw new InvalidOperationException($"Connection string 'DefaultConnection' not found.");
         }
