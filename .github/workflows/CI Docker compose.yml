@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build and run Docker Compose services
+      - name: Build and run  Docker Compose services
         uses: docker/build-push-action@v3
         with:
           context: .
