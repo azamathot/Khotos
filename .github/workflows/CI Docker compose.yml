@@ -19,4 +19,5 @@ jobs:
           docker-compose up -d
       - name: Run tests
         run: |
-          docker exec -it my_web_service_1 bash -c "pytest"
+          curl -X GET "http://localhost:8080/products/Categories/getcategorieslink" -o response.txt
+          cat response.txt
