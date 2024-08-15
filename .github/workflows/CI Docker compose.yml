@@ -19,5 +19,5 @@ jobs:
           docker-compose up -d
       - name: Run tests
         run: |
-          curl -X GET "http://localhost:8080/products/Categories/getcategorieslink" -o response.txt
+          docker exec -it products_1 bash -c "curl -X GET http://products:8080/products/Categories/getcategorieslink -o response.txt"
           cat response.txt
