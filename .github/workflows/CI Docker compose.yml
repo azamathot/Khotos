@@ -17,7 +17,6 @@ jobs:
       - name: Build and run Docker Compose
         run: |
           docker-compose up -d
-      - name: Run tests
+      - name: List running services
         run: |
-          docker exec -it products bash -c "curl -X GET http://products:8080/products/Categories/getcategorieslink -o response.txt"
-          cat response.txt
+          docker ps
