@@ -68,7 +68,8 @@ builder.Services.AddCascadingAuthenticationState().AddAuthentication(options =>
         //это нужно в Development в docker, чтобы шлюз не конфликтовал
 
         options.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
-        options.Authority = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        //options.Authority = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        options.MetadataAddress = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
         options.ClientId = builder.Configuration["Keycloak:resource"];
         options.GetClaimsFromUserInfoEndpoint = true;
         options.MapInboundClaims = true;
@@ -85,11 +86,11 @@ builder.Services.AddCascadingAuthenticationState().AddAuthentication(options =>
             NameClaimType = "name",
             RoleClaimType = "role",
             //ValidateIssuerSigningKey = true,
-            //ValidateIssuer = true,
+            ValidateIssuer = false, //отключаю временно, чтобы измежать конфликта (localhost:8080 и keycloak:8080) при работе с контейнерами докер 
             //ValidateAudience = true,
             //ValidIssuer = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}", // Замените на адрес вашего сервера Keycloak и realm
             //ValidAudience = builder.Configuration["Keycloak:resource"], // Замените на имя вашего приложения
-            ClockSkew = TimeSpan.Zero // Устанавливаем ClockSkew равным нулю для предотвращения проблем с несинхронизированным временем
+            //ClockSkew = TimeSpan.Zero // Устанавливаем ClockSkew равным нулю для предотвращения проблем с несинхронизированным временем
         };
 
 

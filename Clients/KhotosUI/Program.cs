@@ -21,10 +21,10 @@ builder.Services
     .AddCascadingAuthenticationState()
     .AddOidcAuthentication(options =>
     {
-        //options.ProviderOptions.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
-        options.ProviderOptions.Authority = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        options.ProviderOptions.Authority = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}";
+        //options.ProviderOptions.Authority = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}";
         options.ProviderOptions.ClientId = builder.Configuration["Keycloak:resource"];
-        options.ProviderOptions.MetadataUrl = $"{builder.Configuration["WebGatewayUrl"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
+        options.ProviderOptions.MetadataUrl = $"{builder.Configuration["Keycloak:auth-server-url"]}realms/{builder.Configuration["Keycloak:realm"]}/.well-known/openid-configuration";
         options.ProviderOptions.ResponseType = OpenIdConnectResponseType.Code; //"id_token token";//"code";//
         options.ProviderOptions.DefaultScopes.Add("offline_access");
         options.UserOptions.RoleClaim = "roles";
